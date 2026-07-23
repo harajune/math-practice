@@ -2,8 +2,6 @@ import { describe, it, expect } from 'vitest'
 import { generateProblems, TOTAL_QUESTIONS, padMaxForOp } from './problems'
 import { ITEMS, WORD_TEMPLATES } from './wordTemplates'
 
-const edibleNames = new Set(ITEMS.filter((i) => i.edible).map((i) => i.name))
-
 describe('generateProblems', () => {
   it('足し算: 20問・重複なし・a,b 1〜9・答え 2〜18', () => {
     for (let t = 0; t < 50; t++) {
@@ -57,23 +55,34 @@ describe('generateProblems', () => {
           // 差し込み後にプレースホルダが残っていない
           expect(p.display.text).not.toMatch(/\{(item|a|b|c)\}/)
         }
+        // 「0こ たべました」のような不自然な文を避けるため b は 1 以上(key は `id:a:b`)。
+        const b = Number(p.key.split(':')[2])
+        expect(b).toBeGreaterThanOrEqual(1)
       }
     }
   })
 
-  it('文章題: requiresEdible なテンプレートは食べられる題材のみ', () => {
-    // requiresEdible テンプレートに対応する非食べ物の題材名を検出しないことを確認。
-    const edibleTemplateIds = new Set(WORD_TEMPLATES.filter((t) => t.requiresEdible).map((t) => t.id))
+  it('文章題: requires ありのテンプレートには条件を満たす題材のみ差し込まれる', () => {
+    const templateById = new Map(WORD_TEMPLATES.map((t) => [t.id, t]))
     for (let t = 0; t < 100; t++) {
       const ps = generateProblems('word-problem')
       for (const p of ps) {
         if (p.display.type !== 'text') continue
-        const tplId = p.key.split(':')[0]
-        if (!edibleTemplateIds.has(tplId)) continue
-        // このテンプレートの文には食べられる題材名のいずれかが含まれるはず。
-        const hasEdible = [...edibleNames].some((n) => p.display.type === 'text' && p.display.text.includes(n))
-        expect(hasEdible).toBe(true)
+        const tpl = templateById.get(p.key.split(':')[0])
+        if (!tpl?.requires?.length) continue
+        // このテンプレートの文には要求タグをすべて満たす題材名のいずれかが含まれるはず。
+        const validNames = ITEMS.filter((i) => tpl.requires!.every((tag) => i.tags.includes(tag))).map((i) => i.name)
+        const text = p.display.text
+        expect(validNames.some((n) => text.includes(n))).toBe(true)
       }
+    }
+  })
+
+  it('すべてのテンプレートに差し込める題材が1つ以上ある', () => {
+    for (const tpl of WORD_TEMPLATES) {
+      const required = tpl.requires ?? []
+      const candidates = ITEMS.filter((i) => required.every((tag) => i.tags.includes(tag)))
+      expect(candidates.length, tpl.id).toBeGreaterThan(0)
     }
   })
 

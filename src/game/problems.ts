@@ -37,6 +37,13 @@ function makeSubtractionNumbers(): { a: number; b: number } {
   return { a, b }
 }
 
+// 文章題の引き算: 「0こ たべました」のような不自然な文を避けるため b は 1〜a。
+function makeWordSubtractionNumbers(): { a: number; b: number } {
+  const a = randInt(1, 9)
+  const b = randInt(1, a)
+  return { a, b }
+}
+
 // --- 単純計算モードの出題生成 ---
 
 function generateEquationProblems(op: Op): Problem[] {
@@ -80,13 +87,14 @@ function generateWordProblemsForOp(op: Op, count: number, usedTemplateKeys: Set<
   while (problems.length < count && guard < 10000) {
     guard++
     const tpl = pick(templates)
-    const { a, b } = op === 'addition' ? makeAdditionNumbers() : makeSubtractionNumbers()
+    const { a, b } = op === 'addition' ? makeAdditionNumbers() : makeWordSubtractionNumbers()
     // 仕様3.4: 同一の「テンプレート×数値の組」は出さない。
     const key = `${tpl.id}:${a}:${b}`
     if (usedTemplateKeys.has(key)) continue
     usedTemplateKeys.add(key)
 
-    const candidateItems = tpl.requiresEdible ? ITEMS.filter((i) => i.edible) : ITEMS
+    const required = tpl.requires ?? []
+    const candidateItems = ITEMS.filter((i) => required.every((tag) => i.tags.includes(tag)))
     const item = pick(candidateItems)
     const answer = op === 'addition' ? a + b : a - b
 
