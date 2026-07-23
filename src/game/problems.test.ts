@@ -82,4 +82,17 @@ describe('generateProblems', () => {
     expect(WORD_TEMPLATES.filter((t) => t.op === 'subtraction')).toHaveLength(50)
     expect(new Set(WORD_TEMPLATES.map((t) => t.id)).size).toBe(100)
   })
+
+  it('回答選択肢: 4つ・重複なし・正解を含む', () => {
+    for (const mode of ['addition', 'subtraction', 'word-problem'] as const) {
+      for (let t = 0; t < 50; t++) {
+        const ps = generateProblems(mode)
+        for (const p of ps) {
+          expect(p.choices).toHaveLength(4)
+          expect(new Set(p.choices).size).toBe(4)
+          expect(p.choices).toContain(p.answer)
+        }
+      }
+    }
+  })
 })

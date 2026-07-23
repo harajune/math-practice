@@ -18,6 +18,8 @@ export type Problem = {
   op: Op
   display: ProblemDisplay
   answer: number
+  // 回答ボタンに表示する選択肢(正解1つ+誤答3つをシャッフルした4つ)
+  choices: number[]
 }
 
 export type QuizResult = {

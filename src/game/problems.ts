@@ -4,10 +4,23 @@ import { ITEMS, WORD_TEMPLATES, type WordTemplate } from './wordTemplates'
 
 export const TOTAL_QUESTIONS = 20
 
+export const CHOICE_COUNT = 4
+
 // 数字パッドに表示する範囲。仕様4:
 // 足し算(答え 2〜18)は 0〜18、引き算(答え 0〜9)は 0〜9。
 export function padMaxForOp(op: Op): number {
   return op === 'addition' ? 18 : 9
+}
+
+// 正解を含む回答選択肢を生成する。0〜max の範囲から正解以外を重複なく選び、
+// 正解と合わせてシャッフルする。
+function generateChoices(answer: number, max: number, count: number): number[] {
+  const pool: number[] = []
+  for (let n = 0; n <= max; n++) {
+    if (n !== answer) pool.push(n)
+  }
+  const wrongs = shuffle(pool).slice(0, count - 1)
+  return shuffle([answer, ...wrongs])
 }
 
 // --- 単純計算の数値生成(仕様3.1 / 3.2) ---
@@ -36,11 +49,13 @@ function generateEquationProblems(op: Op): Problem[] {
     const key = `${a}${operator}${b}`
     if (seen.has(key)) continue
     seen.add(key)
+    const answer = op === 'addition' ? a + b : a - b
     problems.push({
       key,
       op,
       display: { type: 'equation', a, b, operator },
-      answer: op === 'addition' ? a + b : a - b,
+      answer,
+      choices: generateChoices(answer, padMaxForOp(op), CHOICE_COUNT),
     })
   }
   return problems
@@ -73,12 +88,14 @@ function generateWordProblemsForOp(op: Op, count: number, usedTemplateKeys: Set<
 
     const candidateItems = tpl.requiresEdible ? ITEMS.filter((i) => i.edible) : ITEMS
     const item = pick(candidateItems)
+    const answer = op === 'addition' ? a + b : a - b
 
     problems.push({
       key,
       op,
       display: { type: 'text', text: fillTemplate(tpl, item, a, b) },
-      answer: op === 'addition' ? a + b : a - b,
+      answer,
+      choices: generateChoices(answer, padMaxForOp(op), CHOICE_COUNT),
     })
   }
   return problems

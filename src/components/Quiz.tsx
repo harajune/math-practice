@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Mode } from '../types'
-import { generateProblems, padMaxForOp, TOTAL_QUESTIONS } from '../game/problems'
+import { generateProblems, TOTAL_QUESTIONS } from '../game/problems'
 import { CORRECT_MESSAGES } from '../game/messages'
 import { pick } from '../game/rng'
 import { appendHistory } from '../storage/history'
@@ -94,10 +94,11 @@ export default function Quiz({ mode, onFinish, onQuit }: Props) {
       </div>
 
       <NumberPad
-        max={padMaxForOp(current.op)}
+        choices={current.choices}
         disabled={phase.kind !== 'answering'}
         onAnswer={handleAnswer}
       />
+      <div className="quiz-pad-spacer" />
 
       {phase.kind === 'feedback' && (
         <Feedback
