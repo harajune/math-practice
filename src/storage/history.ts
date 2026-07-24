@@ -1,8 +1,15 @@
-import type { Mode, QuizResult } from '../types'
+import type { Level, Mode, QuizResult } from '../types'
 
 // 仕様6: LocalStorage にプレイ履歴を保存する。
 const STORAGE_KEY = 'math-practice/history'
 const MAX_HISTORY = 100
+
+// level 追加前の旧データには level が存在しないため、single-digit として扱う。
+function normalizeLevel(v: unknown): Level | null {
+  if (v === undefined) return 'single-digit'
+  if (v === 'single-digit' || v === 'up-to-19') return v
+  return null
+}
 
 function isQuizResult(v: unknown): v is QuizResult {
   if (typeof v !== 'object' || v === null) return false
@@ -10,6 +17,7 @@ function isQuizResult(v: unknown): v is QuizResult {
   return (
     typeof o.playedAt === 'string' &&
     (o.mode === 'addition' || o.mode === 'subtraction' || o.mode === 'word-problem') &&
+    normalizeLevel(o.level) !== null &&
     typeof o.correctCount === 'number' &&
     typeof o.totalCount === 'number'
   )
@@ -21,7 +29,7 @@ export function loadHistory(): QuizResult[] {
     if (!raw) return []
     const parsed: unknown = JSON.parse(raw)
     if (!Array.isArray(parsed)) return []
-    return parsed.filter(isQuizResult)
+    return parsed.filter(isQuizResult).map((r) => ({ ...r, level: normalizeLevel(r.level) ?? 'single-digit' }))
   } catch {
     // 壊れたデータや LocalStorage 不可の環境では空履歴として扱う。
     return []
@@ -45,12 +53,14 @@ function localIsoNow(): string {
 // セッション終了ごとに1件追記する。最新 MAX_HISTORY 件を保持。
 export function appendHistory(params: {
   mode: Mode
+  level: Level
   correctCount: number
   totalCount: number
 }): void {
   const entry: QuizResult = {
     playedAt: localIsoNow(),
     mode: params.mode,
+    level: params.level,
     correctCount: params.correctCount,
     totalCount: params.totalCount,
   }

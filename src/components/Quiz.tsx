@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { Mode } from '../types'
+import type { Level, Mode } from '../types'
 import { generateProblems, TOTAL_QUESTIONS } from '../game/problems'
 import { CORRECT_MESSAGES } from '../game/messages'
 import { pick } from '../game/rng'
@@ -9,6 +9,7 @@ import Feedback from './Feedback'
 
 type Props = {
   mode: Mode
+  level: Level
   onFinish: (correctCount: number) => void
   onQuit: () => void
 }
@@ -20,9 +21,9 @@ type Phase =
 const CORRECT_MS = 1000
 const WRONG_MS = 1500
 
-export default function Quiz({ mode, onFinish, onQuit }: Props) {
+export default function Quiz({ mode, level, onFinish, onQuit }: Props) {
   // 20問を生成してからセッション開始(仕様3.4)。
-  const [problems] = useState(() => generateProblems(mode))
+  const [problems] = useState(() => generateProblems(mode, level))
   const [index, setIndex] = useState(0)
   const [phase, setPhase] = useState<Phase>({ kind: 'answering' })
   const correctCountRef = useRef(0)
@@ -56,6 +57,7 @@ export default function Quiz({ mode, onFinish, onQuit }: Props) {
         // セッション完了時のみ履歴に保存(「やめる」では保存しない)。
         appendHistory({
           mode,
+          level,
           correctCount: correctCountRef.current,
           totalCount: problems.length,
         })
