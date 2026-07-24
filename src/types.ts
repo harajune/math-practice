@@ -2,6 +2,10 @@
 
 export type Mode = 'addition' | 'subtraction' | 'word-problem'
 
+// 出題する数の範囲レベル。モードとは独立した軸。
+// single-digit: 1〜9のかず。up-to-19: 19までのかず(繰り上がり・繰り下がりを含む)。
+export type Level = 'single-digit' | 'up-to-19'
+
 // 出題の内部演算種別(数字パッドの範囲を決める)。
 // 文章題は足し算系/引き算系のどちらかになる。
 export type Op = 'addition' | 'subtraction'
@@ -25,6 +29,7 @@ export type Problem = {
 export type QuizResult = {
   playedAt: string // ISO8601(タイムゾーン付き)
   mode: Mode
+  level: Level
   correctCount: number
   totalCount: number
 }
