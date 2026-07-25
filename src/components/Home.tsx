@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Level, Mode } from '../types'
-import { loadLastSelection, saveLastSelection } from '../storage/lastSelection'
+import { loadLastLevel, saveLastLevel } from '../storage/lastLevel'
 
 type Props = {
   onSelectMode: (mode: Mode, level: Level) => void
@@ -20,12 +20,14 @@ const LEVELS: { level: Level; label: string }[] = [
 ]
 
 export default function Home({ onSelectMode }: Props) {
-  // 前回の選択を復元する。初回はむずかしさ=9まで、モードは未選択状態。
-  const [lastSelection] = useState(() => loadLastSelection())
-  const [level, setLevel] = useState<Level>(lastSelection?.level ?? 'single-digit')
+  const [level, setLevel] = useState<Level>(() => loadLastLevel() ?? 'single-digit')
+
+  function handleSelectLevel(level: Level) {
+    setLevel(level)
+    saveLastLevel(level)
+  }
 
   function handleSelectMode(mode: Mode) {
-    saveLastSelection(mode, level)
     onSelectMode(mode, level)
   }
 
@@ -46,7 +48,7 @@ export default function Home({ onSelectMode }: Props) {
               type="button"
               className={`level-button ${l.level === level ? 'level-button-selected' : ''}`}
               aria-pressed={l.level === level}
-              onClick={() => setLevel(l.level)}
+              onClick={() => handleSelectLevel(l.level)}
             >
               {l.label}
             </button>
@@ -61,9 +63,7 @@ export default function Home({ onSelectMode }: Props) {
             <button
               key={m.mode}
               type="button"
-              className={`mode-button ${m.className} ${
-                m.mode === lastSelection?.mode ? 'mode-button-selected' : ''
-              }`}
+              className={`mode-button ${m.className}`}
               onClick={() => handleSelectMode(m.mode)}
             >
               {m.label}

@@ -1,4 +1,5 @@
 import type { Level, Mode, QuizResult } from '../types'
+import { readJson, writeJson } from './localJson'
 
 // 仕様6: LocalStorage にプレイ履歴を保存する。
 const STORAGE_KEY = 'math-practice/history'
@@ -24,16 +25,9 @@ function isQuizResult(v: unknown): v is QuizResult {
 }
 
 export function loadHistory(): QuizResult[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return []
-    const parsed: unknown = JSON.parse(raw)
-    if (!Array.isArray(parsed)) return []
-    return parsed.filter(isQuizResult).map((r) => ({ ...r, level: normalizeLevel(r.level) ?? 'single-digit' }))
-  } catch {
-    // 壊れたデータや LocalStorage 不可の環境では空履歴として扱う。
-    return []
-  }
+  const parsed = readJson(STORAGE_KEY)
+  if (!Array.isArray(parsed)) return []
+  return parsed.filter(isQuizResult).map((r) => ({ ...r, level: normalizeLevel(r.level) ?? 'single-digit' }))
 }
 
 // ローカルタイムゾーン付きの ISO8601 文字列(例: 2026-07-23T10:30:00+09:00)。
@@ -64,13 +58,9 @@ export function appendHistory(params: {
     correctCount: params.correctCount,
     totalCount: params.totalCount,
   }
-  try {
-    const history = loadHistory()
-    history.push(entry)
-    // 超過分は古いものから削除。
-    const trimmed = history.slice(-MAX_HISTORY)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed))
-  } catch {
-    // 保存できなくてもアプリ動作は継続する。
-  }
+  const history = loadHistory()
+  history.push(entry)
+  // 超過分は古いものから削除。
+  const trimmed = history.slice(-MAX_HISTORY)
+  writeJson(STORAGE_KEY, trimmed)
 }
