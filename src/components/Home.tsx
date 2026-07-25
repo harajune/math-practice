@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import type { Level, Mode } from '../types'
-import { loadLastSelection, saveLastSelection } from '../storage/lastSelection'
 
 type Props = {
   onSelectMode: (mode: Mode, level: Level) => void
@@ -20,12 +19,9 @@ const LEVELS: { level: Level; label: string }[] = [
 ]
 
 export default function Home({ onSelectMode }: Props) {
-  // 前回の選択を復元する。初回はむずかしさ=9まで、モードは未選択状態。
-  const [lastSelection] = useState(() => loadLastSelection())
-  const [level, setLevel] = useState<Level>(lastSelection?.level ?? 'single-digit')
+  const [level, setLevel] = useState<Level>('single-digit')
 
   function handleSelectMode(mode: Mode) {
-    saveLastSelection(mode, level)
     onSelectMode(mode, level)
   }
 
@@ -61,9 +57,7 @@ export default function Home({ onSelectMode }: Props) {
             <button
               key={m.mode}
               type="button"
-              className={`mode-button ${m.className} ${
-                m.mode === lastSelection?.mode ? 'mode-button-selected' : ''
-              }`}
+              className={`mode-button ${m.className}`}
               onClick={() => handleSelectMode(m.mode)}
             >
               {m.label}
