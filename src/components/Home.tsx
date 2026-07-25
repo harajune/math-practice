@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { Level, Mode } from '../types'
+import { loadLastLevel, saveLastLevel } from '../storage/lastLevel'
 
 type Props = {
   onSelectMode: (mode: Mode, level: Level) => void
@@ -19,7 +20,12 @@ const LEVELS: { level: Level; label: string }[] = [
 ]
 
 export default function Home({ onSelectMode }: Props) {
-  const [level, setLevel] = useState<Level>('single-digit')
+  const [level, setLevel] = useState<Level>(() => loadLastLevel() ?? 'single-digit')
+
+  function handleSelectLevel(level: Level) {
+    setLevel(level)
+    saveLastLevel(level)
+  }
 
   function handleSelectMode(mode: Mode) {
     onSelectMode(mode, level)
@@ -42,7 +48,7 @@ export default function Home({ onSelectMode }: Props) {
               type="button"
               className={`level-button ${l.level === level ? 'level-button-selected' : ''}`}
               aria-pressed={l.level === level}
-              onClick={() => setLevel(l.level)}
+              onClick={() => handleSelectLevel(l.level)}
             >
               {l.label}
             </button>
