@@ -1,9 +1,7 @@
-import type { Mode } from '../types'
 import { TOTAL_QUESTIONS } from '../game/problems'
 import Confetti from './Confetti'
 
 type Props = {
-  mode: Mode
   correctCount: number
   onReplay: () => void
   onHome: () => void
@@ -12,19 +10,19 @@ type Props = {
 // 正解数に応じた演出(仕様5.3)。
 function celebration(correct: number) {
   if (correct >= TOTAL_QUESTIONS) {
-    return { emoji: '🏆', headline: 'ぜんもん せいかい!', confetti: 120, extraClass: 'result-perfect' }
+    return { emoji: '🏆', headline: 'ぜんもん せいかい!', confetti: 120 }
   }
   if (correct >= 15) {
-    return { emoji: '🌟', headline: 'すごいね!', confetti: 70, extraClass: 'result-great' }
+    return { emoji: '🌟', headline: 'すごいね!', confetti: 70 }
   }
-  return { emoji: '💪', headline: 'よく がんばったね!', confetti: 0, extraClass: 'result-good' }
+  return { emoji: '💪', headline: 'よく がんばったね!', confetti: 0 }
 }
 
 export default function Result({ correctCount, onReplay, onHome }: Props) {
   const c = celebration(correctCount)
 
   return (
-    <div className={`screen result ${c.extraClass}`}>
+    <div className="screen result">
       {c.confetti > 0 && <Confetti count={c.confetti} />}
 
       <div className="result-emoji">{c.emoji}</div>

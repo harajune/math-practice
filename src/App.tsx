@@ -34,7 +34,6 @@ export default function App() {
 
       {screen.name === 'result' && (
         <Result
-          mode={screen.mode}
           correctCount={screen.correctCount}
           onReplay={() => setScreen({ name: 'quiz', mode: screen.mode, level: screen.level })}
           onHome={() => setScreen({ name: 'home' })}
