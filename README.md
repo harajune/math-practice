@@ -37,6 +37,23 @@ npm run preview    # ビルド結果をローカル確認
 - 出力ディレクトリ: `dist`
 - Workers・DB・サーバーサイド処理は不要(インフラコスト最小)
 
+### SNSシェア時の画像表示(OGP)
+
+`VITE_SITE_URL` をビルド時に `index.html` の og:url / og:image / twitter:image へ
+埋め込む(X・Facebookでシェアした際に `public/ogp.png` がプレビュー画像として
+表示される)。環境依存の値のため `.env` はコミットせず、`.env.example` をコピーして使う。
+
+- **ローカル開発**: `.env.example` を `.env` にコピーし、必要なら値を書き換える(`.env` は gitignore 済み)
+- **Cloudflare Pages**: Environment variables に何も設定しなくてよい。`vite.config.ts`
+  がビルド時に Cloudflare 標準の `CF_PAGES_BRANCH` / `CF_PAGES_URL` を見て自動判定する
+  (Cloudflare Pages の Environment variables は Production/Preview を分けて設定できない
+  ため、この判定はコード側に持たせている)
+  - 本番ブランチ(`main`)のビルド → `https://keisan-renshu.com` を固定で使用
+  - それ以外のブランチ(プレビュー)のビルド → デプロイごとに異なる `CF_PAGES_URL`
+    (プレビューURL)をそのまま使用
+  - 本番ブランチ名やドメインを変える場合は `vite.config.ts` の
+    `PRODUCTION_BRANCH` / `PRODUCTION_SITE_URL` を書き換える
+
 ## ソース構成
 
 ```
