@@ -4,6 +4,7 @@ import { loadLastLevel, saveLastLevel } from '../storage/lastLevel'
 
 type Props = {
   onSelectMode: (mode: Mode, level: Level) => void
+  onSelectTetris: (level: Level) => void
 }
 
 // 仕様2.1: タイトルとモード選択ボタン3つ。文言はすべてひらがな。
@@ -19,7 +20,7 @@ const LEVELS: { level: Level; label: string }[] = [
   { level: 'up-to-19', label: 'ちょいむず' },
 ]
 
-export default function Home({ onSelectMode }: Props) {
+export default function Home({ onSelectMode, onSelectTetris }: Props) {
   const [level, setLevel] = useState<Level>(() => loadLastLevel() ?? 'single-digit')
 
   function handleSelectLevel(level: Level) {
@@ -69,6 +70,20 @@ export default function Home({ onSelectMode }: Props) {
               {m.label}
             </button>
           ))}
+        </div>
+      </div>
+
+      <div className="option-group">
+        <p className="option-group-label">あそぶ</p>
+        <div className="mode-list">
+          <button
+            type="button"
+            className="mode-button mode-tetris"
+            onClick={() => onSelectTetris(level)}
+          >
+            <span className="mode-button-emoji">🍰</span>
+            きらきら テトリス
+          </button>
         </div>
       </div>
     </div>
