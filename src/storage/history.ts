@@ -1,4 +1,5 @@
 import type { Level, Mode, QuizResult } from '../types'
+import { localIsoNow } from './isoTime'
 import { readJson, writeJson } from './localJson'
 
 // 仕様6: LocalStorage にプレイ履歴を保存する。
@@ -28,20 +29,6 @@ export function loadHistory(): QuizResult[] {
   const parsed = readJson(STORAGE_KEY)
   if (!Array.isArray(parsed)) return []
   return parsed.filter(isQuizResult).map((r) => ({ ...r, level: normalizeLevel(r.level) ?? 'single-digit' }))
-}
-
-// ローカルタイムゾーン付きの ISO8601 文字列(例: 2026-07-23T10:30:00+09:00)。
-function localIsoNow(): string {
-  const d = new Date()
-  const pad = (n: number) => String(n).padStart(2, '0')
-  const tzMin = -d.getTimezoneOffset()
-  const sign = tzMin >= 0 ? '+' : '-'
-  const abs = Math.abs(tzMin)
-  const tz = `${sign}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`
-  return (
-    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` +
-    `T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}${tz}`
-  )
 }
 
 // セッション終了ごとに1件追記する。最新 MAX_HISTORY 件を保持。

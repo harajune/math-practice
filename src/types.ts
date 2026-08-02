@@ -26,6 +26,14 @@ export type Problem = {
   choices: number[]
 }
 
+// テトリスモードの自己ベスト。むずかしさごとに1件だけ保持する。
+export type TetrisRecord = {
+  playedAt: string // ISO8601(タイムゾーン付き)
+  score: number
+  lines: number
+  level: number
+}
+
 export type QuizResult = {
   playedAt: string // ISO8601(タイムゾーン付き)
   mode: Mode
